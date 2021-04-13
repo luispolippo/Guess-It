@@ -14,11 +14,21 @@ import androidx.lifecycle.ViewModel
  */
 class GameViewModel: ViewModel() {
 
+    companion object{
+        //This is when the game is over
+        const val DONE = 0L
+        //This is the number of millisconds in a second
+        const val ONE_SECOND = 1000L
+        //This is the total time of the game
+        const val COUNTDOWN_TIME = 60000L
+    }
+
+    private val timer: CountDownTimer
+
     //The current word
     private val _word = MutableLiveData<String>()
     val word: LiveData<String>
         get() = _word
-
 
     //The current score
     private val _score =  MutableLiveData<Int>()
@@ -30,8 +40,15 @@ class GameViewModel: ViewModel() {
     val eventGameFinish: LiveData<Boolean>
         get() = _eventGameFinish
 
+    //Says the current time
+    private val _currentTime = MutableLiveData<Long>()
+    val currentTime: LiveData<Long>
+        get() = _currentTime
+
     //The list of the words - the front of the list is the next word to guess
     lateinit var wordList: MutableList<String>
+
+
 
     init{
         Log.i("GameViewModel", "GameViewModel created")
@@ -41,7 +58,21 @@ class GameViewModel: ViewModel() {
 
         resetList()
         nextWord()
+
+        timer = object: CountDownTimer(COUNTDOWN_TIME, ONE_SECOND){
+
+            override fun onTick(millisUntilFinished: Long) {
+                _currentTime.value = (millisUntilFinished/ ONE_SECOND)
+            }
+
+            override fun onFinish() {
+                _currentTime.value = DONE
+               _eventGameFinish.value = true
+            }
+        }
+        timer.start()
     }
+
 
     /**
      * Reset the list of the words and randomize the order
@@ -79,10 +110,9 @@ class GameViewModel: ViewModel() {
     private fun nextWord(){
         //Select and remove a word from the list
         if(wordList.isEmpty()){
-            _eventGameFinish.value = true
-        } else{
-            _word.value = wordList.removeAt(0)
+            resetList()
         }
+        _word.value = wordList.removeAt(0)
     }
 
     /** Methods for buttons pressed **/
@@ -99,6 +129,7 @@ class GameViewModel: ViewModel() {
     override fun onCleared() {
         super.onCleared()
         Log.i("GameViewModel", "GameViewModel destroyed")
+        timer.cancel()
     }
 
     fun onGameFinishComplete(){

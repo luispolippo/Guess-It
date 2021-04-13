@@ -1,6 +1,7 @@
 package com.polippo.guessit.screens.game
 
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -45,6 +46,10 @@ class GameFragment: Fragment() {
                 gameFinished()
                 viewModel.onGameFinishComplete()
             }
+        })
+
+        viewModel.currentTime.observe(this.viewLifecycleOwner, Observer { newTime ->
+            binding.timerText.text = DateUtils.formatElapsedTime(newTime)
         })
 
         binding.correctButton.setOnClickListener{
