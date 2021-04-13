@@ -8,7 +8,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.polippo.guessit.R
@@ -29,6 +28,8 @@ class ScoreFragment: Fragment() {
         val viewModelFactory = ScoreViewModelFactory(scoreFragmentArgs.score)
         val viewModel = ViewModelProvider(this, viewModelFactory).get(ScoreViewModel::class.java)
 
+        binding.scoreViewModel = viewModel
+
         viewModel.score.observe(this.viewLifecycleOwner, Observer { score ->
             binding.scoreText.text = score.toString()
         })
@@ -39,8 +40,6 @@ class ScoreFragment: Fragment() {
                 viewModel.onPlayAgainComplete()
             }
         })
-
-        binding.playAgainButton.setOnClickListener { viewModel.onPlayAgain() }
 
         return binding.root
     }
