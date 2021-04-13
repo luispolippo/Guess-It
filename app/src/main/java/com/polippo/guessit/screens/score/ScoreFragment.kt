@@ -6,6 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.polippo.guessit.R
@@ -23,15 +26,26 @@ class ScoreFragment: Fragment() {
 
         //Get args using by navArgs property delegate
         val scoreFragmentArgs by navArgs<ScoreFragmentArgs>()
-        binding.scoreText.text = scoreFragmentArgs.score.toString()
-        binding.playAgainButton.setOnClickListener { onPlayAgain() }
+        val viewModelFactory = ScoreViewModelFactory(scoreFragmentArgs.score)
+        val viewModel = ViewModelProvider(this, viewModelFactory).get(ScoreViewModel::class.java)
+
+        viewModel.score.observe(this.viewLifecycleOwner, Observer { score ->
+            binding.scoreText.text = score.toString()
+        })
+
+        viewModel.eventPlayAgain.observe(this.viewLifecycleOwner, Observer { playAgain ->
+            if(playAgain){
+                findNavController().navigate(ScoreFragmentDirections.actionRestart())
+                viewModel.onPlayAgainComplete()
+            }
+        })
+
+        binding.playAgainButton.setOnClickListener { viewModel.onPlayAgain() }
 
         return binding.root
     }
 
-    private fun onPlayAgain(){
-        findNavController().navigate(ScoreFragmentDirections.actionRestart())
-    }
+
 
 }
 
